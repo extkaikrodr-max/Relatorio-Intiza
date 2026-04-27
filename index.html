@@ -151,6 +151,40 @@ tr:hover td{background:#FAFBFF}
 /* ── RESPONSIVE ── */
 @media(max-width:1024px){.kpi-grid,.kpi-grid-b{grid-template-columns:repeat(2,1fr)}.faixas-grid{grid-template-columns:repeat(2,1fr)}.charts-grid{grid-template-columns:1fr}}
 @media(max-width:640px){.kpi-grid,.kpi-grid-b{grid-template-columns:1fr}.faixas-grid{grid-template-columns:1fr}.main{padding:1rem 1rem 3rem}.hdr-inner{padding:0}.hdr{padding:0 1rem}}
+
+/* ── SPECIAL CLIENTS ── */
+.sp-intro{background:linear-gradient(135deg,#1C1C2E,#2a1a4a);border-radius:var(--r);padding:1.2rem 1.5rem;display:flex;align-items:center;gap:14px;margin-bottom:1rem}
+.sp-intro-icon{font-size:28px;flex-shrink:0}
+.sp-intro-text{font-size:13px;color:rgba(255,255,255,.75);line-height:1.6}
+.sp-intro-text strong{color:var(--y)}
+.sp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.2rem}
+.sp-kcard{background:var(--card);border-radius:var(--r);padding:1rem 1.2rem;box-shadow:var(--sh);border:1px solid var(--border);border-top:3px solid}
+.sp-kcard.k1{border-top-color:var(--p)}.sp-kcard.k2{border-top-color:var(--b)}.sp-kcard.k3{border-top-color:var(--ac)}.sp-kcard.k4{border-top-color:var(--g)}
+.sp-kcard .lbl{font-size:10.5px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.sp-kcard .val{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--t)}
+.sp-kcard.k3 .val{color:var(--ac)}.sp-kcard.k4 .val{color:var(--g)}
+.sp-kcard .sub{font-size:11px;color:var(--t3);margin-top:4px}
+.sp-cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:1.2rem}
+.sp-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--border);overflow:hidden;transition:box-shadow .2s,transform .15s}
+.sp-card:hover{box-shadow:var(--shd);transform:translateY(-2px)}
+.sp-card-hdr{padding:.85rem 1.1rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)}
+.sp-card-name{font-weight:600;font-size:13px;color:var(--t);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-card-body{padding:.9rem 1.1rem;display:flex;flex-direction:column;gap:7px}
+.sp-row{display:flex;justify-content:space-between;font-size:12.5px}
+.sp-row .lbl{color:var(--t2)}.sp-row .val{font-weight:600;color:var(--t);font-family:'Syne',sans-serif;font-size:12px}
+.sp-row .val.red{color:var(--ac)}.sp-row .val.green{color:var(--g)}
+.sp-card-footer{padding:.7rem 1.1rem;background:var(--bg);display:flex;justify-content:space-between;align-items:center;font-size:11.5px}
+.sp-total{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--t)}
+.prazo-badge{padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.prazo-60{background:#EBF3FF;color:var(--bd)}.prazo-90{background:var(--pl);color:#5a42cc}
+.aging-mini{margin-top:8px;display:flex;gap:3px;height:6px;border-radius:3px;overflow:hidden}
+.aging-seg{height:100%;transition:width .3s}
+.aging-legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.aging-dot{display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--t2)}
+.aging-dot span{width:8px;height:8px;border-radius:2px;display:inline-block;flex-shrink:0}
+@media(max-width:900px){.sp-cards-grid{grid-template-columns:repeat(2,1fr)}.sp-kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.sp-cards-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -365,6 +399,23 @@ tr:hover td{background:#FAFBFF}
         </table>
       </div>
     </div>
+  </div>
+
+
+  <!-- CLIENTES COM PAGAMENTO ESPECIAL -->
+  <div class="sec" id="secEspecial">
+    <div class="sec-hdr"><span class="sec-tag" style="background:var(--p);color:#fff">Especial</span><span class="sec-title">Clientes com Pagamento Especial</span></div>
+
+    <div class="sp-intro">
+      <div class="sp-intro-icon">⭐</div>
+      <div class="sp-intro-text">
+        Estes clientes possuem <strong>condições de pagamento diferenciadas</strong> (prazo estendido de 60 ou 90 dias) negociadas previamente.
+        O vencimento deles deve ser interpretado considerando o prazo especial acordado. O aging exibido é baseado nos dados da aba <strong>"Cliente com pagamento especial"</strong>.
+      </div>
+    </div>
+
+    <div class="sp-kpis" id="spKpis"></div>
+    <div class="sp-cards-grid" id="spCards"></div>
   </div>
 
 </div><!-- /main -->
@@ -659,7 +710,61 @@ function processRows(rows) {
 function $(s){return document.querySelector(s);}
 
 // Init on load
-window.addEventListener('DOMContentLoaded',()=>initDashboard());
+
+// ── SPECIAL CLIENTS DATA ──
+const SP_DATA = [{"nome": "GM COMERCIO E IMPORTACAO LTDA", "conta": "90000073217", "prazo": "90 dias", "vencidas": 168822.5, "nao_vencidas": 190253.99, "total": 359076.49, "ult30": 168822.5, "h3160": 0.0, "h6190": 0.0, "h91120": 0.0, "h121180": 0.0, "avencer": 190253.99}, {"nome": "GENERAL MOTORS DO BRASIL", "conta": "9990000507", "prazo": "90 dias", "vencidas": 140000.0, "nao_vencidas": 60000.0, "total": 200000.0, "ult30": 0.0, "h3160": 140000.0, "h6190": 0.0, "h91120": 0.0, "h121180": 0.0, "avencer": 60000.0}, {"nome": "SHELL", "conta": "9990005517", "prazo": "90 dias", "vencidas": 20000.0, "nao_vencidas": 0.0, "total": 20000.0, "ult30": 0.0, "h3160": 0.0, "h6190": 20000.0, "h91120": 0.0, "h121180": 0.0, "avencer": 0.0}, {"nome": "BDF NIVEA LTDA", "conta": "9990008999", "prazo": "90 dias", "vencidas": 884951.4, "nao_vencidas": 500928.45, "total": 1385879.85, "ult30": 443408.28, "h3160": 441543.12, "h6190": 0.0, "h91120": 0.0, "h121180": 0.0, "avencer": 500928.45}, {"nome": "THE WALT DISNEY COMPANY (BRASIL) LT", "conta": "9990008067", "prazo": "60 dias", "vencidas": 75269.0, "nao_vencidas": 0.0, "total": 75269.0, "ult30": 9926.46, "h3160": 65342.54, "h6190": 0.0, "h91120": 0.0, "h121180": 0.0, "avencer": 0.0}, {"nome": "TURNER INTERNATIONAL LATIN AMERICA,", "conta": "9990057424", "prazo": "60 dias", "vencidas": 88139.55, "nao_vencidas": 119053.05, "total": 207192.6, "ult30": 88139.55, "h3160": 0.0, "h6190": 0.0, "h91120": 0.0, "h121180": 0.0, "avencer": 119053.05}, {"nome": "BRITANIA ELETRODOMESTICOS SA", "conta": "90000015210", "prazo": "90 dias", "vencidas": 501759.84, "nao_vencidas": 214111.11, "total": 715870.95, "ult30": 173986.24, "h3160": 0.0, "h6190": 327773.6, "h91120": 0.0, "h121180": 0.0, "avencer": 214111.11}, {"nome": "ACCENTURE SONG COMUNICACAO BRASIL L", "conta": "90000006241", "prazo": "90 dias", "vencidas": 42838.38, "nao_vencidas": 743120.29, "total": 785958.67, "ult30": 0.0, "h3160": 0.0, "h6190": 42838.38, "h91120": 0.0, "h121180": 0.0, "avencer": 743120.29}, {"nome": "LOREAL BRASIL COMERCIAL DE COSMETIC", "conta": "9990004711", "prazo": "90 dias", "vencidas": 293722.58, "nao_vencidas": 5106578.06, "total": 5400300.64, "ult30": 0.0, "h3160": 137220.87, "h6190": 156501.71, "h91120": 0.0, "h121180": 0.0, "avencer": 5106578.06}, {"nome": "Natura Cosmeticos SA", "conta": "90000038213", "prazo": "90 dias", "vencidas": 6035584.28, "nao_vencidas": 4868595.79, "total": 10904180.07, "ult30": 2241660.27, "h3160": 2628300.07, "h6190": 1165623.94, "h91120": 0.0, "h121180": 0.0, "avencer": 4868595.79}, {"nome": "WBR IND. E COMÉRCIO DE VESTUÁRIO", "conta": "9990295407", "prazo": "90 dias", "vencidas": 17973.9, "nao_vencidas": 24020.53, "total": 41994.43, "ult30": -13021.07, "h3160": 16001.15, "h6190": 14993.82, "h91120": 0.0, "h121180": 0.0, "avencer": 24020.53}, {"nome": "FCA FIAT CHRYSLER AUTOMÓVEIS BRASIL", "conta": "9990050564", "prazo": "90 dias", "vencidas": 400665.8, "nao_vencidas": 265760.0, "total": 666425.8, "ult30": 202961.0, "h3160": 0.0, "h6190": 197704.8, "h91120": 0.0, "h121180": 0.0, "avencer": 265760.0}, {"nome": "SAMSUNG ELETRONICA DA AMAZONIA LTDA", "conta": "9990002285", "prazo": "60 dias", "vencidas": 4029400.18, "nao_vencidas": 6827333.8, "total": 10856733.98, "ult30": 3499996.68, "h3160": 43684.58, "h6190": 417112.92, "h91120": 0.0, "h121180": 68606.0, "avencer": 6827333.8}];
+
+function initSpecial() {
+  const total = SP_DATA.reduce((s,c)=>s+c.total,0);
+  const totalVenc = SP_DATA.reduce((s,c)=>s+c.vencidas,0);
+  const totalAvencer = SP_DATA.reduce((s,c)=>s+c.nao_vencidas,0);
+  const qtd = SP_DATA.length;
+
+  // KPI cards
+  document.getElementById('spKpis').innerHTML = `
+    <div class="sp-kcard k1"><div class="lbl">Total de clientes especiais</div><div class="val">${qtd}</div><div class="sub">com prazo diferenciado</div></div>
+    <div class="sp-kcard k2"><div class="lbl">Carteira total especial</div><div class="val">${BRLk(total)}</div><div class="sub">${BRL(total)}</div></div>
+    <div class="sp-kcard k3"><div class="lbl">Valores vencidos</div><div class="val">${BRLk(totalVenc)}</div><div class="sub">${(totalVenc/total*100).toFixed(1)}% da carteira especial</div></div>
+    <div class="sp-kcard k4"><div class="lbl">A vencer</div><div class="val">${BRLk(totalAvencer)}</div><div class="sub">${(totalAvencer/total*100).toFixed(1)}% da carteira especial</div></div>
+  `;
+
+  // Client cards
+  const sorted = [...SP_DATA].sort((a,b)=>b.total-a.total);
+  document.getElementById('spCards').innerHTML = sorted.map(c => {
+    const prazoCls = c.prazo==='60 dias'?'prazo-60':'prazo-90';
+    const segs = [
+      {v:c.h121180,color:'#7B0000',label:'121-180d'},
+      {v:c.h91120,color:'#B71C1C',label:'91-120d'},
+      {v:c.h6190,color:'#E53935',label:'61-90d'},
+      {v:c.h3160,color:'#FFB020',label:'31-60d'},
+      {v:c.ult30>0?c.ult30:0,color:'#FFE082',label:'Últ.30d'},
+      {v:c.avencer,color:'#43A047',label:'A vencer'},
+    ].filter(s=>s.v>0);
+    const segTotal = segs.reduce((s,sg)=>s+sg.v,0)||1;
+    const agingBar = segs.map(s=>`<div class="aging-seg" style="width:${(s.v/segTotal*100).toFixed(1)}%;background:${s.color}"></div>`).join('');
+    const agingLegend = segs.map(s=>`<div class="aging-dot"><span style="background:${s.color}"></span>${s.label}: ${BRLk(s.v)}</div>`).join('');
+    return `
+      <div class="sp-card">
+        <div class="sp-card-hdr">
+          <div class="sp-card-name" title="${c.nome}">${c.nome}</div>
+          <span class="prazo-badge ${prazoCls}">${c.prazo}</span>
+        </div>
+        <div class="sp-card-body">
+          <div class="sp-row"><span class="lbl">Vencido</span><span class="val red">${BRL(c.vencidas)}</span></div>
+          <div class="sp-row"><span class="lbl">A vencer</span><span class="val green">${BRL(c.nao_vencidas)}</span></div>
+          <div class="aging-mini">${agingBar}</div>
+          <div class="aging-legend">${agingLegend}</div>
+        </div>
+        <div class="sp-card-footer">
+          <span style="color:var(--t3);font-size:11px">Cta: ${c.conta}</span>
+          <span class="sp-total">${BRLk(c.total)}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+window.addEventListener('DOMContentLoaded', () => { initDashboard(); initSpecial(); });
+
 </script>
 </body>
 </html>
