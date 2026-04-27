@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Financeiro — Contas a Receber</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --y:#FFE600;--yd:#C9B300;--yl:#FFFCE0;
+  --b:#3483FA;--bd:#1A5FC8;--bl:#EBF3FF;
+  --p:#7B61FF;--pl:#F0EDFF;
+  --bg:#F4F6FA;--card:#FFFFFF;
+  --t:#1C1C2E;--t2:#5A5A72;--t3:#9898AA;
+  --border:rgba(0,0,0,0.07);
+  --a1:#FFB020;--a2:#E07320;--a3:#D04A1A;--ac:#E53935;
+  --g:#2E7D32;--gl:#E8F5E9;
+  --sh:0 2px 14px rgba(0,0,0,0.06);
+  --shd:0 8px 30px rgba(0,0,0,0.11);
+  --r:14px;--rs:8px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.hdr{background:var(--t);border-bottom:3px solid var(--y);position:sticky;top:0;z-index:200;padding:0 2rem}
+.hdr-inner{max-width:1440px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem;min-height:68px}
+.hdr-brand{display:flex;align-items:center;gap:14px}
+.brand-pill{background:var(--y);color:var(--t);font-family:'Syne',sans-serif;font-weight:800;font-size:11px;padding:5px 11px;border-radius:6px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.hdr-titles h1{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#fff;line-height:1.2}
+.hdr-titles p{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:12px}
+.upd-block{text-align:right}
+.upd-label{font-size:10px;color:rgba(255,255,255,.4);display:flex;align-items:center;gap:5px}
+.upd-label .dot{width:7px;height:7px;border-radius:50%;background:#444;display:inline-block;transition:background .3s}
+.upd-label .dot.ok{background:#4CAF50;box-shadow:0 0 0 3px rgba(76,175,80,.2)}
+.upd-time{font-size:12px;color:var(--y);font-weight:500;margin-top:2px}
+.btn-upload{background:var(--y);color:var(--t);border:none;padding:9px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;white-space:nowrap;transition:background .15s,transform .1s}
+.btn-upload:hover{background:#F0D900}
+.btn-upload:active{transform:scale(.98)}
+#fileInput{display:none}
+
+/* ── MAIN WRAP ── */
+.main{max-width:1440px;margin:0 auto;padding:1.8rem 2rem 4rem}
+
+/* ── SECTION HDR ── */
+.sec{margin-top:2.2rem}
+.sec-hdr{display:flex;align-items:center;gap:10px;margin-bottom:1.1rem}
+.sec-tag{background:var(--y);color:var(--t);font-family:'Syne',sans-serif;font-weight:800;font-size:10px;padding:3px 9px;border-radius:5px;text-transform:uppercase;letter-spacing:.07em}
+.sec-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;color:var(--t)}
+
+/* ── RESUMO BOX ── */
+.resumo-box{background:var(--t);border-radius:var(--r);padding:1.8rem 2rem;position:relative;overflow:hidden;margin-bottom:.2rem}
+.resumo-box::after{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;border-radius:50%;background:rgba(255,230,0,.06);pointer-events:none}
+.resumo-text{font-size:14.5px;line-height:1.95;color:rgba(255,255,255,.78)}
+.resumo-text strong{color:var(--y);font-weight:600}
+
+/* ── ALERTS ── */
+.alerts-col{display:flex;flex-direction:column;gap:9px}
+.alert-row{display:flex;align-items:flex-start;gap:12px;background:var(--card);border-radius:10px;padding:.85rem 1.1rem;box-shadow:var(--sh);border-left:4px solid}
+.alert-row.crit{border-color:var(--ac)}
+.alert-row.warn{border-color:var(--a1)}
+.alert-row.info{border-color:var(--b)}
+.alert-ico{font-size:17px;flex-shrink:0;line-height:1.4}
+.alert-txt{font-size:13.5px;color:var(--t);line-height:1.55}
+.alert-txt strong{color:var(--t)}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.kpi-grid-b{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+.kcard{background:var(--card);border-radius:var(--r);padding:1.25rem 1.4rem;box-shadow:var(--sh);border:1px solid var(--border);position:relative;overflow:hidden;transition:box-shadow .2s}
+.kcard:hover{box-shadow:var(--shd)}
+.kcard-bar{position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--r) var(--r) 0 0}
+.kcard.hero{background:linear-gradient(140deg,#1C1C2E 0%,#252545 100%);border:none}
+.kcard-lbl{font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.45rem}
+.kcard.hero .kcard-lbl{color:rgba(255,255,255,.45)}
+.kcard-val{font-family:'Syne',sans-serif;font-weight:700;line-height:1.1;color:var(--t)}
+.kcard.hero .kcard-val{color:var(--y)}
+.kcard-sub{font-size:11.5px;color:var(--t3);margin-top:5px}
+.kcard.hero .kcard-sub{color:rgba(255,255,255,.35)}
+.v-xl{font-size:28px}
+.v-lg{font-size:22px}
+.v-md{font-size:18px}
+.v-nm{font-size:16px}
+
+/* ── FAIXAS ── */
+.faixas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}
+.fblock{background:var(--card);border-radius:var(--r);padding:1.2rem 1.3rem;box-shadow:var(--sh);border:1px solid var(--border);border-top:4px solid;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.fblock:hover{transform:translateY(-2px);box-shadow:var(--shd)}
+.fblock.f1{border-top-color:#FFB020}.fblock.f2{border-top-color:#E07320}.fblock.f3{border-top-color:#C44010}.fblock.f4{border-top-color:#E53935;background:#FFF5F5}
+.fb-name{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:7px}
+.fb-val{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--t);margin-bottom:10px}
+.fblock.f4 .fb-val{color:var(--ac)}
+.fb-row{display:flex;justify-content:space-between;font-size:12px;color:var(--t2);padding:2px 0}
+.fb-pct{display:inline-block;margin-top:8px;font-size:12px;font-weight:600;padding:3px 8px;border-radius:5px}
+.fblock.f1 .fb-pct{background:#FFF3E0;color:#BF360C}
+.fblock.f2 .fb-pct{background:#FBE9E7;color:#870000}
+.fblock.f3 .fb-pct{background:#FCE4EC;color:#880E4F}
+.fblock.f4 .fb-pct{background:#FFEBEE;color:#B71C1C}
+.crit-pill{font-size:9px;font-weight:700;background:var(--ac);color:#fff;padding:2px 7px;border-radius:20px;margin-left:5px;text-transform:uppercase;vertical-align:middle}
+
+/* ── CHARTS ── */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ccrd{background:var(--card);border-radius:var(--r);padding:1.4rem;box-shadow:var(--sh);border:1px solid var(--border)}
+.ccrd-title{font-family:'Syne',sans-serif;font-weight:600;font-size:13px;color:var(--t);margin-bottom:1rem}
+.chart-box{position:relative;height:210px}
+
+/* ── TABLE CARD ── */
+.tcrd{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);border:1px solid var(--border);overflow:hidden}
+.ttbar{padding:.9rem 1.3rem;display:flex;flex-wrap:wrap;gap:9px;align-items:center;border-bottom:1px solid var(--border);background:var(--bg)}
+.ttbar input,.ttbar select{border:1.5px solid var(--border);border-radius:var(--rs);padding:7px 11px;font-size:12.5px;font-family:'DM Sans',sans-serif;background:var(--card);color:var(--t);outline:none;transition:border .2s}
+.ttbar input:focus,.ttbar select:focus{border-color:var(--b)}
+.ttbar input[type=text]{min-width:170px}
+.ttbar input[type=number]{width:110px}
+.btn-exp{margin-left:auto;background:var(--b);color:#fff;border:none;padding:7px 15px;border-radius:var(--rs);font-size:12.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;gap:6px;transition:background .2s}
+.btn-exp:hover{background:var(--bd)}
+.twrap{overflow-x:auto;max-height:460px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{position:sticky;top:0;background:var(--bg);padding:10px 13px;text-align:left;font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;z-index:2}
+thead th:hover{color:var(--b)}
+td{padding:10px 13px;border-bottom:1px solid var(--border);color:var(--t);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFBFF}
+.td-cli{font-weight:500;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-r{text-align:right}
+.td-val{font-family:'Syne',sans-serif;font-weight:600;font-size:12px;text-align:right}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:600;white-space:nowrap}
+.ba{background:#FFF3E0;color:#BF360C;border:1px solid rgba(191,54,12,.18)}
+.bm{background:#FBE9E7;color:#870000;border:1px solid rgba(135,0,0,.15)}
+.bh{background:#FCE4EC;color:#880E4F;border:1px solid rgba(136,14,79,.12)}
+.bc{background:#FFEBEE;color:#B71C1C;border:1px solid rgba(183,28,28,.18)}
+.pbar-wrap{display:flex;align-items:center;gap:7px}
+.pbar{flex:1;height:3px;background:var(--border);border-radius:2px;min-width:30px}
+.pbar-fill{height:100%;border-radius:2px}
+.rank-n{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;background:var(--bg);color:var(--t2)}
+.rank-n.top{background:var(--y);color:var(--t)}
+.empty-row td{text-align:center;color:var(--t3);padding:2rem}
+
+/* ── LOADING ── */
+.lov{position:fixed;inset:0;background:rgba(28,28,46,.75);display:none;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:14px}
+.lov.on{display:flex}
+.spin{width:42px;height:42px;border-radius:50%;border:4px solid rgba(255,230,0,.15);border-top-color:var(--y);animation:spin .75s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.lov-txt{color:#fff;font-size:13px;font-weight:500}
+
+/* ── SOURCE NOTICE ── */
+.source-note{background:var(--bl);border:1px solid rgba(52,131,250,.18);border-radius:10px;padding:.7rem 1.1rem;font-size:12px;color:var(--bd);display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){.kpi-grid,.kpi-grid-b{grid-template-columns:repeat(2,1fr)}.faixas-grid{grid-template-columns:repeat(2,1fr)}.charts-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.kpi-grid,.kpi-grid-b{grid-template-columns:1fr}.faixas-grid{grid-template-columns:1fr}.main{padding:1rem 1rem 3rem}.hdr-inner{padding:0}.hdr{padding:0 1rem}}
+</style>
+</head>
+<body>
+
+<div class="lov" id="lov"><div class="spin"></div><div class="lov-txt">Processando base de dados…</div></div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-inner">
+    <div class="hdr-brand">
+      <span class="brand-pill">ML Finance</span>
+      <div class="hdr-titles">
+        <h1>Dashboard Financeiro de Contas a Receber</h1>
+        <p>Análise de receita, vencimentos e clientes inadimplentes</p>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="upd-block">
+        <div class="upd-label"><span class="dot ok" id="dot"></span><span id="stxt">Dados carregados</span></div>
+        <div class="upd-time" id="utime">—</div>
+      </div>
+      <button class="btn-upload" onclick="document.getElementById('fileInput').click()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Atualizar base
+      </button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="handleFile(event)">
+    </div>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="source-note">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Dados pré-carregados da base <strong>Report_Intiza.xlsx</strong> — aba "Análisis de clientes". Clique em "Atualizar base" para carregar outra versão.
+  </div>
+
+  <!-- RESUMO -->
+  <div class="sec" style="margin-top:.5rem">
+    <div class="sec-hdr"><span class="sec-tag">Resumo</span><span class="sec-title">Visão Executiva</span></div>
+    <div class="resumo-box"><div class="resumo-text" id="resumoText"></div></div>
+  </div>
+
+  <!-- ALERTAS -->
+  <div class="sec">
+    <div class="sec-hdr"><span class="sec-tag">Alertas</span><span class="sec-title">Alertas Inteligentes</span></div>
+    <div class="alerts-col" id="alertsCol"></div>
+  </div>
+
+  <!-- KPI CARDS ROW 1 -->
+  <div class="sec">
+    <div class="sec-hdr"><span class="sec-tag">Indicadores</span><span class="sec-title">Principais Indicadores</span></div>
+    <div class="kpi-grid">
+      <div class="kcard hero">
+        <div class="kcard-lbl">💰 Receita Total em Aberto</div>
+        <div class="kcard-val v-xl" id="cTotal">—</div>
+        <div class="kcard-sub" id="cTotalSub">—</div>
+      </div>
+      <div class="kcard">
+        <div class="kcard-bar" style="background:var(--ac)"></div>
+        <div class="kcard-lbl">Total Vencido &gt; 30 dias</div>
+        <div class="kcard-val v-lg" id="cVenc30" style="color:var(--ac)">—</div>
+        <div class="kcard-sub" id="cVenc30Sub">—</div>
+      </div>
+      <div class="kcard">
+        <div class="kcard-bar" style="background:var(--p)"></div>
+        <div class="kcard-lbl">Clientes com atraso &gt; 30 dias</div>
+        <div class="kcard-val v-xl" id="cQtd30" style="color:var(--p)">—</div>
+        <div class="kcard-sub" id="cQtd30Sub">—</div>
+      </div>
+    </div>
+    <div class="kpi-grid-b">
+      <div class="kcard">
+        <div class="kcard-bar" style="background:var(--y)"></div>
+        <div class="kcard-lbl">Total em Aberto (carteira)</div>
+        <div class="kcard-val v-lg" id="cAberto">—</div>
+        <div class="kcard-sub" id="cAbertoSub">—</div>
+      </div>
+      <div class="kcard">
+        <div class="kcard-bar" style="background:var(--a1)"></div>
+        <div class="kcard-lbl">Maior cliente devedor (&gt; 30d)</div>
+        <div class="kcard-val v-nm" id="cMaiorCli" style="color:var(--a2)">—</div>
+        <div class="kcard-sub" id="cMaiorCliSub">—</div>
+      </div>
+      <div class="kcard">
+        <div class="kcard-bar" style="background:var(--ac)"></div>
+        <div class="kcard-lbl">Maior atraso identificado</div>
+        <div class="kcard-val v-xl" id="cMaiorMora" style="color:var(--ac)">—</div>
+        <div class="kcard-sub" id="cMaiorMoraSub">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAIXAS -->
+  <div class="sec">
+    <div class="sec-hdr"><span class="sec-tag">Distribuição</span><span class="sec-title">Distribuição por Faixa de Atraso</span></div>
+    <div class="faixas-grid">
+      <div class="fblock f1" onclick="filterF('30-60')">
+        <div class="fb-name">30 a 60 dias</div>
+        <div class="fb-val" id="fv1">—</div>
+        <div class="fb-row"><span>Clientes</span><span id="fc1">—</span></div>
+        <div class="fb-row"><span>Faturas</span><span id="ff1">—</span></div>
+        <div class="fb-pct" id="fp1">—%</div>
+      </div>
+      <div class="fblock f2" onclick="filterF('61-90')">
+        <div class="fb-name">61 a 90 dias</div>
+        <div class="fb-val" id="fv2">—</div>
+        <div class="fb-row"><span>Clientes</span><span id="fc2">—</span></div>
+        <div class="fb-row"><span>Faturas</span><span id="ff2">—</span></div>
+        <div class="fb-pct" id="fp2">—%</div>
+      </div>
+      <div class="fblock f3" onclick="filterF('91-120')">
+        <div class="fb-name">91 a 120 dias</div>
+        <div class="fb-val" id="fv3">—</div>
+        <div class="fb-row"><span>Clientes</span><span id="fc3">—</span></div>
+        <div class="fb-row"><span>Faturas</span><span id="ff3">—</span></div>
+        <div class="fb-pct" id="fp3">—%</div>
+      </div>
+      <div class="fblock f4" onclick="filterF('>120')">
+        <div class="fb-name">Acima de 120 dias <span class="crit-pill">Crítico</span></div>
+        <div class="fb-val" id="fv4">—</div>
+        <div class="fb-row"><span>Clientes</span><span id="fc4">—</span></div>
+        <div class="fb-row"><span>Faturas</span><span id="ff4">—</span></div>
+        <div class="fb-pct" id="fp4">—%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="sec">
+    <div class="sec-hdr"><span class="sec-tag">Gráficos</span><span class="sec-title">Análise Visual</span></div>
+    <div class="charts-grid">
+      <div class="ccrd">
+        <div class="ccrd-title">Receita × Em Aberto × Vencido &gt; 30 dias</div>
+        <div class="chart-box"><canvas id="ch1"></canvas></div>
+      </div>
+      <div class="ccrd">
+        <div class="ccrd-title">Valor vencido por faixa de atraso</div>
+        <div class="chart-box"><canvas id="ch2"></canvas></div>
+      </div>
+      <div class="ccrd">
+        <div class="ccrd-title">Top 10 clientes com maior valor vencido</div>
+        <div class="chart-box" style="height:240px"><canvas id="ch3"></canvas></div>
+      </div>
+      <div class="ccrd">
+        <div class="ccrd-title">Quantidade de clientes por faixa de atraso</div>
+        <div class="chart-box"><canvas id="ch4"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN TABLE -->
+  <div class="sec">
+    <div class="sec-hdr"><span class="sec-tag">Análise</span><span class="sec-title">Clientes devendo acima de 30 dias</span></div>
+    <div class="tcrd">
+      <div class="ttbar">
+        <input type="text" id="srch" placeholder="🔍 Buscar cliente…" oninput="render()">
+        <select id="sFaixa" onchange="render()">
+          <option value="">Todas as faixas</option>
+          <option value="30-60">30 a 60 dias</option>
+          <option value="61-90">61 a 90 dias</option>
+          <option value="91-120">91 a 120 dias</option>
+          <option value=">120">Acima de 120 dias</option>
+        </select>
+        <select id="sRisco" onchange="render()">
+          <option value="">Todos os riscos</option>
+          <option value="Atenção">Atenção</option>
+          <option value="Risco médio">Risco médio</option>
+          <option value="Risco alto">Risco alto</option>
+          <option value="Risco crítico">Risco crítico</option>
+        </select>
+        <input type="number" id="sMin" placeholder="Valor mín." oninput="render()">
+        <input type="number" id="sMax" placeholder="Valor máx." oninput="render()">
+        <button class="btn-exp" onclick="doExport()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar CSV
+        </button>
+      </div>
+      <div class="twrap">
+        <table>
+          <thead><tr>
+            <th onclick="sort('cliente')">Cliente <span style="opacity:.4;font-size:9px">⇅</span></th>
+            <th onclick="sort('vencido')" class="td-r">Valor Devido <span style="opacity:.4;font-size:9px">⇅</span></th>
+            <th onclick="sort('faturas')" class="td-r">Faturas <span style="opacity:.4;font-size:9px">⇅</span></th>
+            <th onclick="sort('mora')" class="td-r">Atraso (d) <span style="opacity:.4;font-size:9px">⇅</span></th>
+            <th>Faixa</th>
+            <th onclick="sort('pct')" class="td-r">Part. % <span style="opacity:.4;font-size:9px">⇅</span></th>
+            <th>Status de risco</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RANKING -->
+  <div class="sec">
+    <div class="sec-hdr"><span class="sec-tag">Prioridades</span><span class="sec-title">Clientes prioritários para cobrança</span></div>
+    <div class="tcrd">
+      <div class="twrap">
+        <table>
+          <thead><tr>
+            <th style="width:44px">#</th>
+            <th>Cliente</th>
+            <th class="td-r">Valor Devido</th>
+            <th class="td-r">Atraso (dias)</th>
+            <th>Faixa</th>
+            <th>Status</th>
+            <th>Recomendação</th>
+          </tr></thead>
+          <tbody id="rankbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<footer style="text-align:center;padding:1.5rem;font-size:11.5px;color:var(--t3);border-top:1px solid var(--border)">
+  Dashboard Financeiro — Contas a Receber &nbsp;|&nbsp; Gerado automaticamente · Base: Report_Intiza.xlsx
+</footer>
+
+<script>
+// ── PRE-LOADED DATA (from Report_Intiza.xlsx - Análisis de clientes) ──
+const PRELOADED = {
+  total_monto: 101663865.93,
+  total_aberto: 37563447.98,
+  total_vencido_30: 21716471.29,
+  total_clientes: 217,
+  clientes_30: 65,
+  clients: [{"cliente":"Natura Cosmeticos SA","vencido":5636697.3,"faturas":16,"mora":36.1,"faixa":"30-60","pct":25.96},{"cliente":"MK ELETRODOMESTICOS MONDIAL S/A","vencido":3768813.24,"faturas":25,"mora":41.2,"faixa":"30-60","pct":17.35},{"cliente":"BUD COMERCIO DE ELETRODOMESTICOS LT","vencido":2250481.06,"faturas":11,"mora":62.5,"faixa":"61-90","pct":10.36},{"cliente":"ANKER INNOVATIONS BRAZIL LTDA","vencido":2048567.95,"faturas":8,"mora":83.1,"faixa":"61-90","pct":9.43},{"cliente":"SAMSUNG ELETRONICA DA AMAZONIA LTDA","vencido":630112.68,"faturas":71,"mora":92.7,"faixa":"91-120","pct":2.9},{"cliente":"AMBEV S.A","vencido":604950.61,"faturas":46,"mora":90.4,"faixa":"91-120","pct":2.79},{"cliente":"BRITANIA ELETRODOMESTICOS SA","vencido":501944.5,"faturas":6,"mora":65.9,"faixa":"61-90","pct":2.31},{"cliente":"EMMA SLEEP COMERCIO DE COLCHOES BRASIL","vencido":488071.76,"faturas":3,"mora":36.5,"faixa":"30-60","pct":2.25},{"cliente":"UNILEVER BRASIL LTDA.","vencido":471151.5,"faturas":20,"mora":94.6,"faixa":"91-120","pct":2.17},{"cliente":"MULTILASER INDUSTRIAL SA","vencido":373442.72,"faturas":6,"mora":75.0,"faixa":"61-90","pct":1.72},{"cliente":"NVIDIA SINGAPORE PTE LTD","vencido":358821.74,"faturas":8,"mora":30.7,"faixa":"30-60","pct":1.65},{"cliente":"PARAMOUNT ENTERTAIMENT BRASIL LTDA.","vencido":301636.51,"faturas":5,"mora":62.6,"faixa":"61-90","pct":1.39},{"cliente":"BANCO DO BRASIL","vencido":300000.0,"faturas":1,"mora":43.0,"faixa":"30-60","pct":1.38},{"cliente":"JM SUPPLY CHAIN MANAGEMENT LTDA","vencido":299627.8,"faturas":1,"mora":105.0,"faixa":"91-120","pct":1.38},{"cliente":"HISENSE GORENJE DO BRASIL IMPORTAÇÃO","vencido":293228.08,"faturas":3,"mora":32.7,"faixa":"30-60","pct":1.35},{"cliente":"TELECOM NET S/A LOGISTICA DIGITAL","vencido":277195.61,"faturas":7,"mora":94.2,"faixa":"91-120","pct":1.28},{"cliente":"NESTLÉ BRASIL LTDA","vencido":243344.13,"faturas":6,"mora":125.6,"faixa":">120","pct":1.12},{"cliente":"GLOBAL MIND USA LLC","vencido":216955.57,"faturas":12,"mora":56.2,"faixa":"30-60","pct":1.0},{"cliente":"FCA FIAT CHRYSLER AUTOMÓVEIS BRASIL","vencido":197704.8,"faturas":2,"mora":134.0,"faixa":">120","pct":0.91},{"cliente":"COTY BRASIL COMERCIO LTDA","vencido":192476.3,"faturas":18,"mora":34.9,"faixa":"30-60","pct":0.89},{"cliente":"LUXOTTICA BRASIL PRODUTOS OTICOS E ESPORTIVOS LTDA","vencido":149143.27,"faturas":12,"mora":96.7,"faixa":"91-120","pct":0.69},{"cliente":"GENERAL MOTORS DO BRASIL","vencido":140000.0,"faturas":2,"mora":60.0,"faixa":"30-60","pct":0.64},{"cliente":"DIAMOND COLCHOES LTDA","vencido":138403.45,"faturas":7,"mora":132.0,"faixa":">120","pct":0.64},{"cliente":"ISDIN PRODUTOS FARMACEUTICOS LTDA","vencido":135757.15,"faturas":3,"mora":60.0,"faixa":"30-60","pct":0.63},{"cliente":"V TECH MOBILE COMMUNICATION LTDA","vencido":115952.31,"faturas":1,"mora":33.0,"faixa":"30-60","pct":0.53},{"cliente":"SOFTYS BRASIL LTDA","vencido":114062.88,"faturas":10,"mora":91.2,"faixa":"91-120","pct":0.53},{"cliente":"CAIXA SEGURADORA S/A Youse","vencido":112892.6,"faturas":6,"mora":93.0,"faixa":"91-120","pct":0.52},{"cliente":"HNK BR INDUSTRIA DE BEBIDAS LTDA.","vencido":112473.41,"faturas":8,"mora":46.0,"faixa":"30-60","pct":0.52},{"cliente":"XIAOMI H.K. LIMITED","vencido":111070.08,"faturas":1,"mora":75.0,"faixa":"61-90","pct":0.51},{"cliente":"WHIRLPOOL S.A.","vencido":97798.09,"faturas":2,"mora":349.0,"faixa":">120","pct":0.45},{"cliente":"MOTOROLA MOBILITY COMERCIO DE PRODU","vencido":89408.0,"faturas":2,"mora":43.0,"faixa":"30-60","pct":0.41},{"cliente":"HALEON BRASIL DISTRIBUIDORA LTDA","vencido":88408.71,"faturas":4,"mora":61.4,"faixa":"61-90","pct":0.41},{"cliente":"ALLIED TECNOLOGIA S.A.","vencido":86453.0,"faturas":3,"mora":45.5,"faixa":"30-60","pct":0.4},{"cliente":"RONNIE COLEMAN BRASIL SUPLEMENTOS L","vencido":83072.39,"faturas":3,"mora":34.8,"faixa":"30-60","pct":0.38},{"cliente":"THE WALT DISNEY COMPANY (BRASIL) LT","vencido":75269.0,"faturas":2,"mora":39.3,"faixa":"30-60","pct":0.35},{"cliente":"PUIG BRASIL COMERC DE PERFUMES LTDA","vencido":68734.0,"faturas":3,"mora":64.0,"faixa":"61-90","pct":0.32},{"cliente":"SCHNEIDER ELECTRIC BRASIL LTDA","vencido":42804.0,"faturas":6,"mora":66.6,"faixa":"61-90","pct":0.2},{"cliente":"BACARDI MARTINI DO BRASIL INDUSTRIA","vencido":40132.96,"faturas":4,"mora":49.0,"faixa":"30-60","pct":0.18},{"cliente":"INPULSE DIGITAL, LLC","vencido":36922.0,"faturas":3,"mora":100.5,"faixa":"91-120","pct":0.17},{"cliente":"AZUL LINHAS AEREAS BRASILEIRAS S.A.","vencido":36000.0,"faturas":1,"mora":75.0,"faixa":"61-90","pct":0.17},{"cliente":"MERCADOPAGO INSTITUIÇÃO DE PAGAMENTO LTDA","vencido":34300.03,"faturas":5,"mora":117.6,"faixa":"91-120","pct":0.16},{"cliente":"MAHLE METAL LEVE S.A.","vencido":29475.25,"faturas":1,"mora":86.0,"faixa":"61-90","pct":0.14},{"cliente":"NESTLE BRASIL TDA","vencido":27094.11,"faturas":12,"mora":60.0,"faixa":"30-60","pct":0.12},{"cliente":"PEPSICO DO BRASIL LTDA","vencido":26912.96,"faturas":2,"mora":107.2,"faixa":"91-120","pct":0.12},{"cliente":"WIGOO / WGTECH","vencido":24950.94,"faturas":2,"mora":105.0,"faixa":"91-120","pct":0.11},{"cliente":"ASSOCIACAO NACIONAL DAS FRANQUIAS D","vencido":24860.73,"faturas":1,"mora":126.0,"faixa":">120","pct":0.11},{"cliente":"MK ECOMM LTDA LOJA_OFICIAL MERCADO_FÁCIL","vencido":23400.62,"faturas":2,"mora":43.0,"faixa":"30-60","pct":0.11},{"cliente":"ED COMERCIO DE COLCHOES LTDA","vencido":21625.33,"faturas":1,"mora":309.0,"faixa":">120","pct":0.1},{"cliente":"LATICINIOS BELA VISTA Piracanjuba","vencido":19812.43,"faturas":4,"mora":86.2,"faixa":"61-90","pct":0.09},{"cliente":"DESKTOP S.A.","vencido":19513.32,"faturas":1,"mora":33.0,"faixa":"30-60","pct":0.09},{"cliente":"COMUNICARE COMERCIO DE APARELHOS","vencido":18516.69,"faturas":6,"mora":128.5,"faixa":">120","pct":0.09},{"cliente":"SOPRANO INDUSTRIA ELETROMETALURGICA SOPRANO OFICIAL","vencido":17091.86,"faturas":3,"mora":31.4,"faixa":"30-60","pct":0.08},{"cliente":"DINIZ COMERCIO DE COLCHOES LTDA","vencido":16928.32,"faturas":1,"mora":288.0,"faixa":">120","pct":0.08},{"cliente":"OSRAM COMERCIO DE SOLUCOES DE ILUMI","vencido":16179.18,"faturas":3,"mora":154.2,"faixa":">120","pct":0.07},{"cliente":"INDUSTRIA E COMERCIO DE CONFECCOES","vencido":14472.45,"faturas":4,"mora":89.6,"faixa":"61-90","pct":0.07},{"cliente":"GT6 BRASIL COMERCIO VAREJISTA DE PR","vencido":10652.48,"faturas":1,"mora":134.0,"faixa":">120","pct":0.05},{"cliente":"KIMBERLY CLARK BRASIL IND. E COM","vencido":10340.0,"faturas":3,"mora":43.0,"faixa":"30-60","pct":0.05},{"cliente":"FERRERO DO BRASIL INDUSTRIA DOCEIRA","vencido":9054.4,"faturas":1,"mora":43.0,"faixa":"30-60","pct":0.04},{"cliente":"NAUTIKA COMERCIAL DE ARTIGOS PARA","vencido":7440.0,"faturas":1,"mora":43.0,"faixa":"30-60","pct":0.03},{"cliente":"aa","vencido":5002.89,"faturas":1,"mora":155.0,"faixa":">120","pct":0.02},{"cliente":"ULTRA SPORTS COMERCIO DIGITAL LTDA","vencido":3131.71,"faturas":1,"mora":43.0,"faixa":"30-60","pct":0.01},{"cliente":"Seagate Technology LLC","vencido":2386.3,"faturas":1,"mora":75.0,"faixa":"61-90","pct":0.01},{"cliente":"VCT BRASIL IMPORTAÇÃO E EXPORTAÇÃO","vencido":2042.74,"faturas":1,"mora":228.0,"faixa":">120","pct":0.01},{"cliente":"Black Skull","vencido":697.48,"faturas":2,"mora":41.5,"faixa":"30-60","pct":0.0},{"cliente":"BRITO E CIA LTDA","vencido":607.91,"faturas":3,"mora":37.8,"faixa":"30-60","pct":0.0}]
+};
+
+// ── STATE ──
+let D = PRELOADED;
+let allClients = [...D.clients];
+let sortF = 'vencido', sortDir = -1;
+let charts = {};
+
+const BRL = v => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0}).format(v);
+const BRLk = v => v>=1e6?'R$ '+(v/1e6).toFixed(1).replace('.',',')+'M':v>=1e3?'R$ '+(v/1e3).toFixed(0)+'K':BRL(v);
+const FMAP = {'30-60':'30 a 60 dias','61-90':'61 a 90 dias','91-120':'91 a 120 dias','>120':'Acima de 120 dias'};
+const RMAP = {'30-60':'Atenção','61-90':'Risco médio','91-120':'Risco alto','>120':'Risco crítico'};
+const BCLS = {'Atenção':'ba','Risco médio':'bm','Risco alto':'bh','Risco crítico':'bc'};
+const PCOLS = {'30-60':'#FFB020','61-90':'#E07320','91-120':'#C44010','>120':'#E53935'};
+
+function calcFaixas(list) {
+  const f = {'30-60':{v:0,c:0,ft:0},'61-90':{v:0,c:0,ft:0},'91-120':{v:0,c:0,ft:0},'>120':{v:0,c:0,ft:0}};
+  for(const c of list){const k=c.faixa;if(f[k]){f[k].v+=c.vencido;f[k].c++;f[k].ft+=c.faturas;}}
+  return f;
+}
+
+function initDashboard() {
+  const clients = D.clients;
+  const tv30 = D.total_vencido_30;
+  const f = calcFaixas(clients);
+  const sorted = [...clients].sort((a,b)=>b.vencido-a.vencido);
+  const mc = sorted[0];
+  const maxMora = Math.max(...clients.map(c=>c.mora));
+  const mcMora = clients.find(c=>c.mora===maxMora);
+  const qtdCrit = clients.filter(c=>c.faixa==='>120').length;
+
+  // KPI Cards
+  $('#cTotal').textContent = BRLk(D.total_monto);
+  $('#cTotalSub').textContent = D.total_clientes + ' clientes na base';
+  $('#cAberto').textContent = BRLk(D.total_aberto);
+  $('#cAbertoSub').textContent = ((D.total_aberto/D.total_monto)*100).toFixed(1)+'% da receita total';
+  $('#cVenc30').textContent = BRLk(tv30);
+  $('#cVenc30Sub').textContent = ((tv30/D.total_aberto)*100).toFixed(1)+'% do total em aberto';
+  $('#cQtd30').textContent = clients.length;
+  $('#cQtd30Sub').textContent = ((clients.length/D.total_clientes)*100).toFixed(0)+'% do total de clientes';
+  $('#cMaiorCli').textContent = mc ? mc.cliente : '—';
+  $('#cMaiorCliSub').textContent = mc ? BRLk(mc.vencido)+' · '+(mc.vencido/tv30*100).toFixed(1)+'% do vencido' : '—';
+  $('#cMaiorMora').textContent = maxMora.toFixed(0)+' dias';
+  $('#cMaiorMoraSub').textContent = mcMora ? mcMora.cliente : '—';
+
+  // Faixas
+  const setF = (n,k) => {
+    const pct = tv30>0?(f[k].v/tv30*100).toFixed(1):'0.0';
+    $('#fv'+n).textContent = BRLk(f[k].v);
+    $('#fc'+n).textContent = f[k].c;
+    $('#ff'+n).textContent = f[k].ft;
+    $('#fp'+n).textContent = pct+'%';
+  };
+  setF(1,'30-60');setF(2,'61-90');setF(3,'91-120');setF(4,'>120');
+
+  // Charts
+  buildCharts(f, clients, tv30);
+
+  // Tables
+  allClients = [...clients];
+  render();
+  renderRank(clients, tv30);
+
+  // Resumo
+  const top3 = sorted.slice(0,3);
+  const top3pct = top3.reduce((s,c)=>s+c.vencido,0)/tv30*100;
+  const top3nm = top3.map(c=>c.cliente.split(' ').slice(0,2).join(' ')).join(', ');
+  $('#resumoText').innerHTML =
+    `A receita total identificada na base é de <strong>${BRL(D.total_monto)}</strong>. Desse total, `+
+    `<strong>${BRL(D.total_aberto)}</strong> está em aberto (${((D.total_aberto/D.total_monto)*100).toFixed(1)}% da receita), `+
+    `e <strong>${BRL(tv30)}</strong> corresponde a valores vencidos acima de 30 dias. `+
+    `Atualmente, existem <strong>${clients.length} clientes</strong> com atraso superior a 30 dias, `+
+    (qtdCrit>0?`sendo que <strong>${qtdCrit} ${qtdCrit===1?'cliente está':'clientes estão'} em situação crítica</strong>, com vencimentos acima de 120 dias. `:'')+
+    `Os principais pontos de atenção estão concentrados em <strong>${top3nm}</strong>, que representam `+
+    `<strong>${top3pct.toFixed(1)}%</strong> do total vencido acima de 30 dias.`;
+
+  // Alerts
+  const al = [];
+  const cv120 = clients.filter(c=>c.faixa==='>120');
+  if(cv120.length) al.push({t:'crit',i:'🚨',tx:`<strong>${cv120.length} ${cv120.length===1?'cliente possui':'clientes possuem'} atraso acima de 120 dias</strong>, totalizando ${BRL(cv120.reduce((s,c)=>s+c.vencido,0))}. Ação jurídica ou negociação urgente necessária.`});
+  if(mc&&mc.vencido/tv30>0.2) al.push({t:'crit',i:'⚠️',tx:`O maior cliente devedor (<strong>${mc.cliente}</strong>) representa <strong>${(mc.vencido/tv30*100).toFixed(1)}%</strong> do total vencido acima de 30 dias — ${BRL(mc.vencido)}.`});
+  const top5pct = sorted.slice(0,5).reduce((s,c)=>s+c.vencido,0)/tv30*100;
+  if(top5pct>60) al.push({t:'warn',i:'📊',tx:`Mais de <strong>${top5pct.toFixed(0)}%</strong> do total vencido está concentrado nos <strong>5 maiores clientes</strong>. Alta concentração de risco.`});
+  const f3060 = clients.filter(c=>c.faixa==='30-60');
+  if(f3060.length) al.push({t:'warn',i:'🕐',tx:`<strong>${f3060.length} ${f3060.length===1?'cliente está':'clientes estão'} entre 30 e 60 dias</strong> de atraso (${BRL(f3060.reduce((s,c)=>s+c.vencido,0))}). Ação preventiva pode evitar evolução para risco crítico.`});
+  if(tv30/D.total_monto>0.15) al.push({t:'info',i:'📉',tx:`O vencido acima de 30 dias representa <strong>${(tv30/D.total_monto*100).toFixed(1)}%</strong> da receita total. Recomenda-se revisão da política de crédito e limites por cliente.`});
+  if(!al.length) al.push({t:'info',i:'✅',tx:'Nenhum alerta crítico identificado. Continue monitorando os vencimentos regularmente.'});
+  $('#alertsCol').innerHTML = al.map(a=>`<div class="alert-row ${a.t}"><div class="alert-ico">${a.i}</div><div class="alert-txt">${a.tx}</div></div>`).join('');
+
+  // Timestamp
+  const now = new Date();
+  $('#utime').textContent = now.toLocaleString('pt-BR');
+  $('#dot').className='dot ok';
+  $('#stxt').textContent='Dados atualizados';
+}
+
+function buildCharts(f, clients, tv30) {
+  const dc = k => { if(charts[k]){charts[k].destroy();delete charts[k];} };
+  const top10 = [...clients].sort((a,b)=>b.vencido-a.vencido).slice(0,10);
+
+  dc('c1');
+  charts.c1 = new Chart($('#ch1'), {
+    type:'bar',
+    data:{labels:['Receita Total','Total em Aberto','Vencido >30d'],
+      datasets:[{data:[D.total_monto,D.total_aberto,tv30],backgroundColor:['#3483FA','#FFB020','#E53935'],borderRadius:7,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{ticks:{callback:v=>BRLk(v),font:{size:10}},grid:{color:'#f0f0f0'}},x:{grid:{display:false}}}}
+  });
+
+  dc('c2');
+  charts.c2 = new Chart($('#ch2'), {
+    type:'doughnut',
+    data:{labels:['30-60 dias','61-90 dias','91-120 dias','>120 dias'],
+      datasets:[{data:[f['30-60'].v,f['61-90'].v,f['91-120'].v,f['>120'].v],
+        backgroundColor:['#FFB020','#E07320','#C44010','#E53935'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:10}}}}
+  });
+
+  dc('c3');
+  charts.c3 = new Chart($('#ch3'), {
+    type:'bar',
+    data:{labels:top10.map(c=>c.cliente.length>20?c.cliente.slice(0,20)+'…':c.cliente),
+      datasets:[{data:top10.map(c=>c.vencido),backgroundColor:'#7B61FF',borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{callback:v=>BRLk(v),font:{size:9.5}},grid:{color:'#f0f0f0'}},y:{grid:{display:false},ticks:{font:{size:10}}}}}
+  });
+
+  dc('c4');
+  charts.c4 = new Chart($('#ch4'), {
+    type:'bar',
+    data:{labels:['30-60 dias','61-90 dias','91-120 dias','>120 dias'],
+      datasets:[{data:[f['30-60'].c,f['61-90'].c,f['91-120'].c,f['>120'].c],
+        backgroundColor:['#FFB020','#E07320','#C44010','#E53935'],borderRadius:6,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{y:{ticks:{font:{size:10}},grid:{color:'#f0f0f0'}},x:{grid:{display:false}}}}
+  });
+}
+
+function render() {
+  const s = $('#srch').value.toLowerCase();
+  const sf = $('#sFaixa').value;
+  const sr = $('#sRisco').value;
+  const mn = parseFloat($('#sMin').value)||0;
+  const mx = parseFloat($('#sMax').value)||Infinity;
+  let data = allClients.filter(c=>
+    (!s||c.cliente.toLowerCase().includes(s))&&
+    (!sf||c.faixa===sf)&&
+    (!sr||RMAP[c.faixa]===sr)&&
+    c.vencido>=mn&&c.vencido<=mx
+  );
+  data.sort((a,b)=>{
+    let va=a[sortF],vb=b[sortF];
+    if(sortF==='cliente'){return sortDir*(va.localeCompare(vb));}
+    return sortDir*(va-vb);
+  });
+  const tv30 = D.total_vencido_30;
+  const tbody = $('#tbody');
+  if(!data.length){tbody.innerHTML='<tr class="empty-row"><td colspan="7">Nenhum cliente encontrado com os filtros selecionados.</td></tr>';return;}
+  tbody.innerHTML = data.map(c=>{
+    const r=RMAP[c.faixa],bc=BCLS[r],pc=PCOLS[c.faixa];
+    const pct=tv30>0?c.vencido/tv30*100:0;
+    return `<tr>
+      <td class="td-cli" title="${c.cliente}">${c.cliente}</td>
+      <td class="td-val">${BRL(c.vencido)}</td>
+      <td class="td-r">${c.faturas}</td>
+      <td class="td-r">${c.mora.toFixed(0)} d</td>
+      <td>${FMAP[c.faixa]}</td>
+      <td class="td-r">
+        <div class="pbar-wrap">
+          <div class="pbar"><div class="pbar-fill" style="width:${Math.min(pct,100)}%;background:${pc}"></div></div>
+          ${pct.toFixed(1)}%
+        </div>
+      </td>
+      <td><span class="badge ${bc}">${r}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderRank(clients, tv30) {
+  const scored = [...clients].map(c=>({...c,score:c.vencido*(1+c.mora/100)})).sort((a,b)=>b.score-a.score).slice(0,15);
+  const rec = c => {
+    if(c.mora>120) return 'Prioridade máxima: atraso acima de 120 dias';
+    if(c.mora>90)  return 'Negociação urgente recomendada';
+    if(c.mora>60)  return 'Contato imediato recomendado';
+    return 'Acompanhamento preventivo';
+  };
+  $('#rankbody').innerHTML = scored.map((c,i)=>{
+    const r=RMAP[c.faixa],bc=BCLS[r];
+    return `<tr>
+      <td><span class="rank-n ${i<3?'top':''}">${i+1}</span></td>
+      <td class="td-cli" title="${c.cliente}">${c.cliente}</td>
+      <td class="td-val">${BRL(c.vencido)}</td>
+      <td class="td-r">${c.mora.toFixed(0)} d</td>
+      <td>${FMAP[c.faixa]}</td>
+      <td><span class="badge ${bc}">${r}</span></td>
+      <td style="font-size:12px;color:var(--t2)">${rec(c)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function sort(f){if(sortF===f)sortDir*=-1;else{sortF=f;sortDir=-1;}render();}
+function filterF(f){$('#sFaixa').value=f;render();document.getElementById('tbody').closest('.tcrd').scrollIntoView({behavior:'smooth',block:'start'});}
+
+function doExport() {
+  const s=$('#srch').value.toLowerCase(),sf=$('#sFaixa').value,sr=$('#sRisco').value;
+  const mn=parseFloat($('#sMin').value)||0,mx=parseFloat($('#sMax').value)||Infinity;
+  const data=allClients.filter(c=>(!s||c.cliente.toLowerCase().includes(s))&&(!sf||c.faixa===sf)&&(!sr||RMAP[c.faixa]===sr)&&c.vencido>=mn&&c.vencido<=mx);
+  const lines=[['Cliente','Valor Vencido','Faturas','Mora (dias)','Faixa','Risco','Part. %'].join(';'),
+    ...data.map(c=>[c.cliente,c.vencido.toFixed(2).replace('.',','),c.faturas,c.mora.toFixed(0),FMAP[c.faixa],RMAP[c.faixa],c.pct.toFixed(2)].join(';'))];
+  const b=new Blob(['\uFEFF'+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='clientes_vencidos_30d.csv';a.click();
+}
+
+// ── FILE UPLOAD ──
+function handleFile(e) {
+  const file=e.target.files[0];if(!file)return;
+  document.getElementById('lov').classList.add('on');
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try {
+      const wb=XLSX.read(ev.target.result,{type:'binary',cellDates:true});
+      let sn=wb.SheetNames[0];
+      for(const n of wb.SheetNames){if(n.toLowerCase().includes('cliente')||n.toLowerCase().includes('analisis')||n.toLowerCase().includes('análisis')){sn=n;break;}}
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{defval:null,raw:false});
+      processRows(rows);
+      document.getElementById('lov').classList.remove('on');
+      document.getElementById('fileInput').value='';
+    } catch(err){document.getElementById('lov').classList.remove('on');alert('Erro: '+err.message);}
+  };
+  reader.readAsBinaryString(file);
+}
+
+function findCol(keys,cands){for(const c of cands){const f=keys.find(k=>k.toLowerCase().includes(c.toLowerCase()));if(f)return f;}return null;}
+function parseN(v){if(v===null||v===undefined)return null;if(typeof v==='number')return v;const s=String(v).replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.');const n=parseFloat(s);return isNaN(n)?null:n;}
+
+function processRows(rows) {
+  if(!rows.length)return;
+  const keys=Object.keys(rows[0]);
+  const cCli=findCol(keys,['Cliente','Nombre','Name','client']);
+  const cMonto=findCol(keys,['Monto','Valor','Amount','receita','revenue','total']);
+  const cVenc=findCol(keys,['Monto vencido','valor vencido','vencido','overdue']);
+  const cMora=findCol(keys,['Mora','mora','dias atraso','atraso','delay']);
+  const cFat=findCol(keys,['Facturas pendientes','faturas','invoices','pendentes']);
+
+  const map={};
+  for(const r of rows){
+    const cli=r[cCli];if(!cli)continue;
+    const monto=parseN(r[cMonto]);if(monto===null||monto<=0)continue;
+    const venc=parseN(r[cVenc])||0;
+    const mora=parseN(r[cMora])||0;
+    const fat=parseN(r[cFat])||1;
+    const k=String(cli).trim();
+    if(!map[k])map[k]={cliente:k,monto:0,vencido:0,mora:0,faturas:0};
+    map[k].monto+=monto;map[k].vencido+=venc;
+    if(mora>map[k].mora)map[k].mora=mora;
+    map[k].faturas+=fat;
+  }
+  const all=Object.values(map);
+  const tm=all.reduce((s,c)=>s+c.monto,0);
+  const ta=all.reduce((s,c)=>s+c.vencido,0);
+  const c30=all.filter(c=>c.mora>=30&&c.vencido>0);
+  const tv30=c30.reduce((s,c)=>s+c.vencido,0);
+  const gt=k=>k<=60?'30-60':k<=90?'61-90':k<=120?'91-120':'>120';
+  c30.forEach(c=>{c.faixa=gt(c.mora);c.pct=tv30>0?+(c.vencido/tv30*100).toFixed(2):0;});
+  c30.sort((a,b)=>b.vencido-a.vencido);
+  D={total_monto:tm,total_aberto:ta,total_vencido_30:tv30,total_clientes:all.length,clientes_30:c30.length,clients:c30};
+  allClients=[...c30];
+  initDashboard();
+  document.querySelector('.source-note').innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 11 12 14 22 4"/></svg> Dados atualizados com sucesso a partir do arquivo enviado.';
+}
+
+function $(s){return document.querySelector(s);}
+
+// Init on load
+window.addEventListener('DOMContentLoaded',()=>initDashboard());
+</script>
+</body>
+</html>
