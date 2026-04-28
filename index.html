@@ -185,6 +185,47 @@ tr:hover td{background:#FAFBFF}
 @media(max-width:900px){.sp-cards-grid{grid-template-columns:repeat(2,1fr)}.sp-kpis{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.sp-cards-grid{grid-template-columns:1fr}}
 
+
+/* ── WEEKLY EVOLUTION ── */
+.wk-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.2rem}
+.wk-kcard{background:var(--card);border-radius:var(--r);padding:1rem 1.2rem;box-shadow:var(--sh);border:1px solid var(--border)}
+.wk-kcard .wk-lbl{font-size:10.5px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.wk-kcard .wk-val{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;color:var(--t);line-height:1.1}
+.wk-kcard .wk-sub{font-size:11.5px;margin-top:5px}
+.wk-kcard .wk-delta{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:4px}
+.delta-up{background:#FFF3E0;color:#E65100}.delta-dn{background:#E8F5E9;color:#1B5E20}.delta-eq{background:#EDE7F6;color:#4527A0}
+.wk-faixas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.2rem}
+.wk-fblock{background:var(--card);border-radius:var(--r);padding:1.1rem 1.2rem;box-shadow:var(--sh);border:1px solid var(--border);border-top:4px solid}
+.wk-fblock.wf1{border-top-color:#FFB020}.wk-fblock.wf2{border-top-color:#E07320}.wk-fblock.wf3{border-top-color:#C44010}.wk-fblock.wf4{border-top-color:#E53935}
+.wk-fn{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:6px}
+.wk-fv{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--t);margin-bottom:8px}
+.wk-frow{display:flex;justify-content:space-between;font-size:11.5px;color:var(--t2);padding:2px 0;border-bottom:1px solid var(--border)}
+.wk-frow:last-of-type{border-bottom:none}
+.wk-frow .lbl{color:var(--t3)}.wk-frow .cur{font-weight:600;color:var(--t)}.wk-frow .prev{color:var(--t3)}
+.wk-status{display:inline-flex;align-items:center;gap:4px;margin-top:8px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
+.wk-melhorou{background:#E8F5E9;color:#1B5E20}
+.wk-piorou{background:#FFEBEE;color:#B71C1C}
+.wk-estavel{background:#EDE7F6;color:#4527A0}
+.wk-var-pos{color:#E53935;font-weight:600}.wk-var-neg{color:#2E7D32;font-weight:600}.wk-var-z{color:var(--t3);font-weight:600}
+.wk-chart-card{background:var(--card);border-radius:var(--r);padding:1.4rem;box-shadow:var(--sh);border:1px solid var(--border);margin-bottom:1.2rem}
+.wk-chart-title{font-family:'Syne',sans-serif;font-weight:600;font-size:13px;color:var(--t);margin-bottom:1rem}
+.wk-chart-box{position:relative;height:220px}
+.wk-resumo-box{background:var(--card);border-radius:var(--r);padding:1.5rem;box-shadow:var(--sh);border:1px solid var(--border);border-left:4px solid var(--p)}
+.wk-resumo-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--t);margin-bottom:.9rem;display:flex;align-items:center;gap:8px}
+.wk-resumo-text{font-size:13.5px;line-height:1.85;color:var(--t2);white-space:pre-line}
+.wk-btn-row{display:flex;gap:10px;margin-top:1rem;flex-wrap:wrap}
+.wk-btn{border:none;padding:9px 18px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:7px;transition:opacity .2s}
+.wk-btn:hover{opacity:.85}
+.wk-btn-copy{background:var(--p);color:#fff}
+.wk-btn-csv{background:var(--b);color:#fff}
+.wk-dates{display:flex;align-items:center;gap:12px;margin-bottom:1rem;font-size:12.5px;color:var(--t2)}
+.wk-date-chip{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-weight:600}
+.wk-date-chip.atual{background:var(--p);color:#fff;border-color:var(--p)}
+.wk-copied{font-size:11px;color:var(--g);opacity:0;transition:opacity .3s;font-weight:500}
+.wk-copied.show{opacity:1}
+@media(max-width:900px){.wk-kpis{grid-template-columns:repeat(2,1fr)}.wk-faixas-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.wk-kpis{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -416,6 +457,55 @@ tr:hover td{background:#FAFBFF}
 
     <div class="sp-kpis" id="spKpis"></div>
     <div class="sp-cards-grid" id="spCards"></div>
+  </div>
+
+
+  <!-- EVOLUÇÃO SEMANAL DO AGING -->
+  <div class="sec" id="secWeekly">
+    <div class="sec-hdr">
+      <span class="sec-tag" style="background:var(--p);color:#fff">Semanal</span>
+      <span class="sec-title">Evolução Semanal do Aging</span>
+    </div>
+
+    <div class="wk-dates">
+      <span>Comparando:</span>
+      <span class="wk-date-chip atual" id="wkDateAtual">—</span>
+      <span style="color:var(--t3)">vs.</span>
+      <span class="wk-date-chip" id="wkDateAnt">—</span>
+      <span style="color:var(--t3);font-size:11px">(fonte: Aging_AdSales_MLB_2026.xlsx)</span>
+    </div>
+
+    <!-- KPI summary cards -->
+    <div class="wk-kpis" id="wkKpis"></div>
+
+    <!-- Per-faixa comparison blocks -->
+    <div class="wk-faixas-grid" id="wkFaixas"></div>
+
+    <!-- Comparison chart -->
+    <div class="wk-chart-card">
+      <div class="wk-chart-title">Comparativo de valor vencido por faixa — Semana atual vs. Semana anterior</div>
+      <div class="wk-chart-box"><canvas id="wkChart"></canvas></div>
+    </div>
+
+    <!-- Weekly text summary -->
+    <div class="wk-resumo-box">
+      <div class="wk-resumo-title">
+        <span style="font-size:18px">📋</span>
+        Resumo para envio semanal
+        <span class="wk-copied" id="wkCopied">✓ Copiado!</span>
+      </div>
+      <div class="wk-resumo-text" id="wkResumoText"></div>
+      <div class="wk-btn-row">
+        <button class="wk-btn wk-btn-copy" onclick="copyWeeklyResumo()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copiar resumo semanal
+        </button>
+        <button class="wk-btn wk-btn-csv" onclick="exportWeeklyCSV()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar aging semanal (CSV)
+        </button>
+      </div>
+    </div>
   </div>
 
 </div><!-- /main -->
@@ -763,7 +853,145 @@ function initSpecial() {
   }).join('');
 }
 
-window.addEventListener('DOMContentLoaded', () => { initDashboard(); initSpecial(); });
+
+// ── WEEKLY AGING DATA ──────────────────────────────────────────────────────
+const WK_ATUAL = {"label": "22/04/2026", "faixas": {"30-60": {"val": 7443907.01, "cli": 50}, "61-90": {"val": 5334107.49, "cli": 32}, "91-120": {"val": 2897310.98, "cli": 22}, ">120": {"val": 2635605.85, "cli": 25}}, "total": 18310931.33, "clientes": 87};
+const WK_ANT   = {"label": "31/03/2026", "faixas": {"30-60": {"val": 9088672.73, "cli": 44}, "61-90": {"val": 4892341.67, "cli": 30}, "91-120": {"val": 2956603.33, "cli": 25}, ">120": {"val": 1232347.69, "cli": 16}}, "total": 18169965.42, "clientes": 74};
+
+function initWeekly() {
+  const wa = WK_ATUAL, wn = WK_ANT;
+  const FAIXAS = ['30-60','61-90','91-120','>120'];
+  const FAIXAS_LBL = {'30-60':'30 a 60 dias','61-90':'61 a 90 dias','91-120':'91 a 120 dias','>120':'Acima de 120 dias'};
+  const FAIXAS_CLS = {'30-60':'wf1','61-90':'wf2','91-120':'wf3','>120':'wf4'};
+
+  document.getElementById('wkDateAtual').textContent = wa.label;
+  document.getElementById('wkDateAnt').textContent   = wn.label;
+
+  const deltaV   = wa.total - wn.total;
+  const deltaVPct = wn.total > 0 ? (deltaV / wn.total * 100) : 0;
+  const deltaC   = wa.clientes - wn.clientes;
+  const statusGeral = Math.abs(deltaVPct) < 1 ? 'estavel' : deltaV < 0 ? 'melhorou' : 'piorou';
+
+  // ── KPI cards ──
+  const kpis = [
+    {lbl:'Total vencido &gt;30d (atual)',   val:BRLk(wa.total),  sub:`Semana de ${wa.label}`,   delta:deltaV, deltaPct:deltaVPct},
+    {lbl:'Total vencido &gt;30d (anterior)',val:BRLk(wn.total),  sub:`Semana de ${wn.label}`,   delta:null},
+    {lbl:'Clientes em atraso &gt;30d',      val:wa.clientes,     sub:`Anterior: ${wn.clientes} · Variação: ${deltaC > 0 ? '+' : ''}${deltaC}`, delta:null},
+  ];
+  document.getElementById('wkKpis').innerHTML = kpis.map(k => {
+    let deltaHtml = '';
+    if (k.delta !== null) {
+      const cls  = Math.abs(k.deltaPct) < 1 ? 'delta-eq' : k.delta > 0 ? 'delta-up' : 'delta-dn';
+      const sign = k.delta > 0 ? '▲' : k.delta < 0 ? '▼' : '→';
+      deltaHtml = `<div class="wk-delta ${cls}">${sign} ${Math.abs(k.deltaPct).toFixed(1)}% (${k.delta > 0 ? '+' : ''}${BRLk(k.delta)})</div>`;
+    }
+    return `<div class="wk-kcard"><div class="wk-lbl">${k.lbl}</div><div class="wk-val">${k.val}</div><div class="wk-sub">${k.sub}</div>${deltaHtml}</div>`;
+  }).join('');
+
+  // ── Per-faixa blocks ──
+  document.getElementById('wkFaixas').innerHTML = FAIXAS.map(fk => {
+    const fa = wa.faixas[fk], fn = wn.faixas[fk];
+    const dv = fa.val - fn.val;
+    const dp = fn.val > 0 ? dv / fn.val * 100 : 0;
+    const dc = fa.cli - fn.cli;
+    const status = Math.abs(dp) < 1 ? 'estavel' : dv < 0 ? 'melhorou' : 'piorou';
+    const statusLbl = status === 'melhorou' ? '▼ Melhorou' : status === 'piorou' ? '▲ Piorou' : '→ Estável';
+    const dvCls = dv > 0 ? 'wk-var-pos' : dv < 0 ? 'wk-var-neg' : 'wk-var-z';
+    const sign = dv > 0 ? '+' : '';
+    return `<div class="wk-fblock ${FAIXAS_CLS[fk]}">
+      <div class="wk-fn">${FAIXAS_LBL[fk]}</div>
+      <div class="wk-fv">${BRLk(fa.val)}</div>
+      <div class="wk-frow"><span class="lbl">Atual</span><span class="cur">${BRL(fa.val)}</span></div>
+      <div class="wk-frow"><span class="lbl">Anterior</span><span class="prev">${BRL(fn.val)}</span></div>
+      <div class="wk-frow"><span class="lbl">Variação R$</span><span class="${dvCls}">${sign}${BRLk(dv)}</span></div>
+      <div class="wk-frow"><span class="lbl">Variação %</span><span class="${dvCls}">${sign}${dp.toFixed(1)}%</span></div>
+      <div class="wk-frow"><span class="lbl">Clientes atual/ant.</span><span class="cur">${fa.cli} / ${fn.cli} (${dc >= 0 ? '+' : ''}${dc})</span></div>
+      <div class="wk-status wk-${status}">${statusLbl}</div>
+    </div>`;
+  }).join('');
+
+  // ── Chart ──
+  if (charts['wkChart']) { charts['wkChart'].destroy(); delete charts['wkChart']; }
+  charts['wkChart'] = new Chart(document.getElementById('wkChart'), {
+    type: 'bar',
+    data: {
+      labels: FAIXAS.map(f => FAIXAS_LBL[f]),
+      datasets: [
+        { label: `Atual (${wa.label})`,    data: FAIXAS.map(f => wa.faixas[f].val), backgroundColor: '#7B61FF', borderRadius: 5, borderSkipped: false },
+        { label: `Anterior (${wn.label})`, data: FAIXAS.map(f => wn.faixas[f].val), backgroundColor: 'rgba(123,97,255,0.25)', borderRadius: 5, borderSkipped: false },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, boxWidth: 12, padding: 12 } } },
+      scales: {
+        y: { ticks: { callback: v => BRLk(v), font: { size: 10 } }, grid: { color: '#f0f0f0' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ── Resumo text ──
+  const stLbl = { melhorou: 'Melhoramos ✅', piorou: 'Pioramos ⚠️', estavel: 'Ficamos estáveis →' };
+  const faixaStatus = fk => {
+    const dv = wa.faixas[fk].val - wn.faixas[fk].val;
+    const dp = wn.faixas[fk].val > 0 ? dv / wn.faixas[fk].val * 100 : 0;
+    return Math.abs(dp) < 1 ? 'estabilidade' : dv < 0 ? 'melhora' : 'piora';
+  };
+  const deltaFmt = fk => {
+    const dv = wa.faixas[fk].val - wn.faixas[fk].val;
+    return (dv >= 0 ? '+' : '') + BRLk(dv);
+  };
+
+  const resumo = `Resumo semanal do aging — ${wa.label}
+
+A receita total atualizada da carteira é de ${BRL(D.total_monto)}. O valor vencido acima de 30 dias está em ${BRL(wa.total)}, representando uma variação de ${deltaVPct >= 0 ? '+' : ''}${deltaVPct.toFixed(1)}% em relação à semana anterior (${BRL(wn.total)}).
+
+Na comparação semanal:
+• A faixa de 30 a 60 dias apresentou ${faixaStatus('30-60')}, com variação de ${deltaFmt('30-60')} (${wa.faixas['30-60'].cli} clientes).
+• A faixa de 61 a 90 dias apresentou ${faixaStatus('61-90')}, com variação de ${deltaFmt('61-90')} (${wa.faixas['61-90'].cli} clientes).
+• A faixa de 91 a 120 dias apresentou ${faixaStatus('91-120')}, com variação de ${deltaFmt('91-120')} (${wa.faixas['91-120'].cli} clientes).
+• A faixa acima de 120 dias apresentou ${faixaStatus('>120')}, com variação de ${deltaFmt('>120')} (${wa.faixas['>120'].cli} clientes).
+
+Atualmente, temos ${wa.clientes} clientes devendo acima de 30 dias (${deltaC >= 0 ? '+' : ''}${deltaC} vs. semana anterior). Os principais clientes críticos seguem destacados no ranking do dashboard.
+
+Status geral da semana: ${stLbl[statusGeral]}`;
+
+  document.getElementById('wkResumoText').textContent = resumo;
+  window._wkResumoText = resumo;
+}
+
+function copyWeeklyResumo() {
+  if (window._wkResumoText) {
+    navigator.clipboard.writeText(window._wkResumoText).then(() => {
+      const el = document.getElementById('wkCopied');
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2500);
+    });
+  }
+}
+
+function exportWeeklyCSV() {
+  const wa = WK_ATUAL, wn = WK_ANT;
+  const FAIXAS = ['30-60','61-90','91-120','>120'];
+  const FAIXAS_LBL = {'30-60':'30 a 60 dias','61-90':'61 a 90 dias','91-120':'91 a 120 dias','>120':'Acima de 120 dias'};
+  const lines = [
+    ['Faixa','Valor Atual','Clientes Atual','Valor Anterior','Clientes Anterior','Variação R$','Variação %','Status'].join(';'),
+    ...FAIXAS.map(fk => {
+      const fa = wa.faixas[fk], fn = wn.faixas[fk];
+      const dv = fa.val - fn.val;
+      const dp = fn.val > 0 ? dv / fn.val * 100 : 0;
+      const st = Math.abs(dp) < 1 ? 'Estável' : dv < 0 ? 'Melhorou' : 'Piorou';
+      return [FAIXAS_LBL[fk], fa.val.toFixed(2).replace('.',','), fa.cli, fn.val.toFixed(2).replace('.',','), fn.cli, dv.toFixed(2).replace('.',','), dp.toFixed(1).replace('.',','), st].join(';');
+    }),
+    ['TOTAL', wa.total.toFixed(2).replace('.',','), wa.clientes, wn.total.toFixed(2).replace('.',','), wn.clientes, (wa.total-wn.total).toFixed(2).replace('.',','), ((wa.total-wn.total)/wn.total*100).toFixed(1).replace('.',','), ''].join(';')
+  ];
+  const b = new Blob(['﻿' + lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(b);
+  a.download = `aging_semanal_${wa.label.replace(/\//g,'-')}.csv`; a.click();
+}
+
+window.addEventListener('DOMContentLoaded', () => { initDashboard(); initSpecial(); initWeekly(); });
 
 </script>
 </body>
