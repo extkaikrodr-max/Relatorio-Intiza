@@ -188,9 +188,9 @@ tr:hover td{background:#FAFBFF}
 
 /* ── WEEKLY EVOLUTION ── */
 .wk-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:1.2rem}
-.wk-kcard{background:var(--card);border-radius:var(--r);padding:1rem 1.2rem;box-shadow:var(--sh);border:1px solid var(--border)}
+.wk-kcard{background:var(--card);border-radius:var(--r);padding:1rem 1.2rem;box-shadow:var(--sh);border:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;min-height:110px}
 .wk-kcard .wk-lbl{font-size:10.5px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
-.wk-kcard .wk-val{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;color:var(--t);line-height:1.1}
+.wk-kcard .wk-val{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:var(--t);line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .wk-kcard .wk-sub{font-size:11.5px;margin-top:5px}
 .wk-kcard .wk-delta{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:4px}
 .delta-up{background:#FFF3E0;color:#E65100}.delta-dn{background:#E8F5E9;color:#1B5E20}.delta-eq{background:#EDE7F6;color:#4527A0}
@@ -874,8 +874,8 @@ function initWeekly() {
 
   // ── KPI cards ──
   const kpis = [
-    {lbl:'Total vencido &gt;30d (atual)',   val:BRLk(wa.total),  sub:`Semana de ${wa.label}`,   delta:deltaV, deltaPct:deltaVPct},
-    {lbl:'Total vencido &gt;30d (anterior)',val:BRLk(wn.total),  sub:`Semana de ${wn.label}`,   delta:null},
+    {lbl:'Total vencido &gt;30d (atual)',   val:BRL(wa.total),  sub:`Semana de ${wa.label}`,   delta:deltaV, deltaPct:deltaVPct},
+    {lbl:'Total vencido &gt;30d (anterior)',val:BRL(wn.total),  sub:`Semana de ${wn.label}`,   delta:null},
     {lbl:'Clientes em atraso &gt;30d',      val:wa.clientes,     sub:`Anterior: ${wn.clientes} · Variação: ${deltaC > 0 ? '+' : ''}${deltaC}`, delta:null},
   ];
   document.getElementById('wkKpis').innerHTML = kpis.map(k => {
